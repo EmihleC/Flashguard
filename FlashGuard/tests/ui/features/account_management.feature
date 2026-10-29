@@ -19,10 +19,6 @@ Examples: Accepted
     | case | FullName | Email | phoneNumber | Password | expectedMessage |
     | Update Account details | Alice Ledger | alice@flashguard.local | 0794867890 |  offline-demo | Profile details updated successfully |
     
-
-
-  Background:
-    Given I navigate to the payment methods feature
     
   Scenario Outline: "<case>"
     When I enter my "<Card Number>"
