@@ -20,8 +20,7 @@ let browser: Browser;
 
 BeforeAll(async function () {
   browser = await chromium.launch({
-    headless: false,
-    channel: "chrome"
+    headless: false
   });
 });
 
