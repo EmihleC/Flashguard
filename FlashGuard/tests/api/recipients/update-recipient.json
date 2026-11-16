@@ -3,14 +3,16 @@
     "method": "PUT",
     "url": "http://localhost:4000/recipients/1",
     "headers": {
-      "Authorization": "Bearer <owner_token>"
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjEsImlhdCI6MTc5MzM2NTkxNSwiZXhwIjoxNzkzNDUyMzE1fQ.IaGzEYelXsLljREn77p7Nx3kANuHdh0mDYUxQCfNTCY"
     },
     "body": {
-      "name": "Bob Updated"
+      "name": "Alice"
     }
   },
   "Response": {
-    "status": 200,
-    "message": "Recipient updated successfully"
+    "id": 1,
+    "sender_account_id": 1,
+    "recipient_account_id": 2,
+    "blacklist_status": "clear"
   }
 }

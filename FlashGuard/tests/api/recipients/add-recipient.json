@@ -1,17 +1,29 @@
-  [{
+  [
+  {
     "Request": {
       "method": "POST",
       "url": "http://localhost:4000/recipients",
       "headers": {
-        "Authorization": "Bearer <owner_token>"
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjEsImlhdCI6MTc5MzM2NTkxNSwiZXhwIjoxNzkzNDUyMzE1fQ.IaGzEYelXsLljREn77p7Nx3kANuHdh0mDYUxQCfNTCY"
       },
       "body": {
-        "name": "Bob Smith",
-        "email": "bob@flashguard.local"
+        "email": "alice@flashguard.local",
+        "password": "offline-demo"
       }
     },
-    "Response": {
-      "status": 201,
-      "message": "Recipient added successfully"
-    }
-  }]
+    "Response": [
+      {
+        "id": 1,
+        "sender_account_id": 1,
+        "recipient_account_id": 2,
+        "blacklist_status": "clear"
+      },
+      {
+        "id": 2,
+        "sender_account_id": 1,
+        "recipient_account_id": 3,
+        "blacklist_status": "blocked"
+      }
+    ]
+  }
+]
