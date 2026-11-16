@@ -8,6 +8,8 @@
     },
 
     "Response": {
+        "status": 200,
+        "body": {
     "id": 68,
     "sender_account_id": 1,
     "recipient_account_id": 2,
@@ -22,7 +24,7 @@
     "settled_at": "2026-11-16T12:38:57.413Z",
     "compliance_flag": null
 }
-    },
+    }},
 
 
 {
@@ -33,6 +35,8 @@
     },
 
 "Response": {
+    "status": 200,
+    "body": {
     "id": 66,
     "sender_account_id": 2,
     "recipient_account_id": 1,
@@ -47,9 +51,7 @@
     "settled_at": "2026-11-16T12:33:20.196Z",
     "compliance_flag": null
 }
-
 }
-
-
+}
 
 ]
