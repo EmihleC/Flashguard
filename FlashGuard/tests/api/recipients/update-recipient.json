@@ -10,6 +10,7 @@
     }
   },
   "Response": {
+    "Status code": 200,
     "id": 1,
     "sender_account_id": 1,
     "recipient_account_id": 2,

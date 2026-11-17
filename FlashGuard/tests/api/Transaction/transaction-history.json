@@ -5,8 +5,12 @@
       "headers": {
         "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjEsImlhdCI6MTc5NDIxOTYzMiwiZXhwIjoxNzk0MzA2MDMyfQ.Yfo-cGzrOE_2AkH9HjItUeo3VSs2cBtY_HmhWNZq9fk"
       }
+    
     },
     "Response": [
+      {
+        "Status code": 200
+      },
       {
         "id": 2,
         "sender_account_id": 1,

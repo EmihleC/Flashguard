@@ -1,23 +1,14 @@
 {
   "Request": {
     "method": "POST",
-    "url": "http://localhost:4000/transactions/transfer/2/cancel",
-    "headers": {
-      "Authorization": "Bearer <valid_token_account_1>"
+    "url": "/api/transactions/cancel-transfer/2/cancel ",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOjEsImlhdCI6MTc5NDIxOTYzMiwiZXhwIjoxNzk0MzA2MDMyfQ.Yfo-cGzrOE_2AkH9HjItUeo3VSs2cBtY_HmhWNZq9fk"
+
     },
-    "body": {},
-   "id": 2,
-    "sender_account_id": 1,
-    "recipient_account_id": 2,
-    "transaction_type": "transfer",
-    "service_type": null,
-    "service_network": null,
-    "service_phone_number": null,
-    "amount": 100,
-    "status": "cancelled",
-    "created_at": "2026-10-27T07:22:32.228Z",
-    "authorized_at": null,
-    "settled_at": null,
-    "compliance_flag": null
+    "body": {
+    },
+  "StatusCode": 400,
+  "Response": {
+    "message": "Pending transaction not found"
   }
 }
