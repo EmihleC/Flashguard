@@ -3,8 +3,8 @@
    {
     "Request": {
         "method": "POST",
-        "url": "http://localhost:4000/transactions/transfer/68/authorize "
-    
+        "url": "http://localhost:4000/transactions/transfer/68/authorize"
+
     },
 
     "Response": {
@@ -25,15 +25,12 @@
     "compliance_flag": null
 }
     }},
-
-
 {
     "Request": {
         "method": "POST",
-        "url": "http://localhost:4000/transactions/transfer/66/authorize "
+        "url": "http://localhost:4000/transactions/transfer/66/authorize"
     
     },
-
 "Response": {
     "status": 200,
     "body": {
