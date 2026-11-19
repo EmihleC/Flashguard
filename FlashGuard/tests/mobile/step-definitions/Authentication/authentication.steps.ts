@@ -60,9 +60,6 @@ const enterPassword = async (password: string) => {
 Given('the merchant is on the login screen', async () => {
   console.log('\n========== MOB-002 LOGIN SCREEN ==========');
 
-  console.log('Current package:', await driver.getCurrentPackage());
-  console.log('Current activity:', await driver.getCurrentActivity());
-
   await verifyLoginScreen();
 
   console.log('Login screen successfully displayed.');
