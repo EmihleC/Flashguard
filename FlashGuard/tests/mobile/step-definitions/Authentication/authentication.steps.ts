@@ -1,7 +1,4 @@
-
 import { Given, When, Then } from '@cucumber/cucumber';
-
-
 
 // Login screen elements
 const welcomeHeading = () =>
