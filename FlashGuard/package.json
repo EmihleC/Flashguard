@@ -11,6 +11,21 @@
     "stack:down": "docker compose down -v",
     "stack:logs": "docker compose logs -f",
     "db:reset-seed": "docker compose --profile seed run --rm app-seed",
-    "api:health": "curl http://localhost:4000/health"
+    "api:health": "curl http://localhost:4000/health",
+    "test:mobile": "wdio run ./tests/mobile/wdio.conf.js",
+    "test:mobile:cucumber": "wdio run ./tests/mobile/wdio.cucumber.conf.ts"
+  },
+  "devDependencies": {
+    "@wdio/appium-service": "^10.1.1",
+    "@wdio/cli": "^10.1.0",
+    "@wdio/cucumber-framework": "^10.1.0",
+    "@wdio/local-runner": "^10.1.0",
+    "@wdio/mocha-framework": "^10.1.0",
+    "@wdio/spec-reporter": "^10.1.0",
+    "appium": "^3.9.0",
+    "appium-uiautomator2-driver": "^8.6.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

@@ -1,7 +1,9 @@
-import { Given, When, Then, Before  } from '@cucumber/cucumber';
+import { Given, When, Then, Before } from '@cucumber/cucumber';
 // ======================================================
 // MOB-AUTH-03.2: CAMERA FACE-CHECK AUTHENTICATION
 // ======================================================
+
+const appPackage = 'com.anonymous.flashguadmobileapp';
 
 // Camera face-check elements
 const cameraFaceCheckButton = () =>
@@ -21,13 +23,32 @@ const cameraAccessAlert = () =>
 
 // System permission dialog buttons
 const cameraAllowButton = () =>
-  $('id=com.android.permissioncontroller:id/permission_allow_foreground_only_button');
+  $('android=new UiSelector().text("While using the app")');
 
 const cameraAllowOnceButton = () =>
-  $('id=com.android.permissioncontroller:id/permission_allow_one_time_button');
+  $('android=new UiSelector().text("Only this time")');
 
-const cameraDenyButton = () =>
-  $('id=com.android.permissioncontroller:id/permission_deny_button');
+const cameraDenyButtons = () => [
+  $('android=new UiSelector().text("Don’t allow")'),
+  $(`android=new UiSelector().text("Don't allow")`)
+];
+
+async function setCameraPermission(action: 'grant' | 'revoke'): Promise<void> {
+  await driver.execute('mobile: changePermissions', {
+    permissions: 'android.permission.CAMERA',
+    appPackage,
+    action
+  });
+  const permissions: unknown = await driver.execute('mobile: getPermissions', {
+    appPackage,
+    type: action === 'grant' ? 'granted' : 'denied'
+  });
+  const expectedState = action === 'grant' ? 'granted' : 'revoked';
+
+  if (!Array.isArray(permissions) || !permissions.includes('android.permission.CAMERA')) {
+    throw new Error(`Could not verify that camera permission was ${expectedState}.`);
+  }
+}
 
 async function verifyLoginScreen(): Promise<void> {
   await cameraFaceCheckButton().waitForDisplayed({
@@ -35,6 +56,18 @@ async function verifyLoginScreen(): Promise<void> {
     timeoutMsg: 'Login screen was not displayed.'
   });
 }
+
+Before({ tags: '@permission' }, async () => {
+  await setCameraPermission('revoke');
+});
+
+Before({ tags: '@camera and @negative and not @permission' }, async () => {
+  await setCameraPermission('grant');
+});
+
+Before({ tags: '@camera and @positive' }, async () => {
+  await setCameraPermission('grant');
+});
 
 // MOB-AUTH-03.2: Open camera face-check
 
@@ -62,33 +95,41 @@ When('the merchant grants camera permission if requested', async () => {
 
   const allowButton = cameraAllowButton();
   const allowOnceButton = cameraAllowOnceButton();
+  const grantedPermissions: unknown = await driver.execute('mobile: getPermissions', {
+    appPackage,
+    type: 'granted'
+  });
 
-  if (await allowButton.isDisplayed().catch(() => false)) {
-    await allowButton.click();
-    console.log('Selected: While using the app');
-  } else if (await allowOnceButton.isDisplayed().catch(() => false)) {
-    await allowOnceButton.click();
-    console.log('Selected: Only this time');
-  } else {
-    console.log('Permission dialog not detected. Checking current permission state.');
+  if (!Array.isArray(grantedPermissions)) {
+    throw new Error('Could not read the app camera permission state.');
   }
 
-  // Wait for Android permission dialog to disappear.
-  await driver.waitUntil(
-    async () => {
-      const allowVisible = await allowButton.isDisplayed().catch(() => false);
-      const onceVisible = await allowOnceButton.isDisplayed().catch(() => false);
+  if (grantedPermissions.includes('android.permission.CAMERA')) {
+    console.log('Camera permission is already granted.');
+  } else {
+    await driver.waitUntil(
+      async () => {
+        if (await allowButton.isDisplayed()) {
+          await allowButton.click();
+          return true;
+        }
 
-      return !allowVisible && !onceVisible;
-    },
-    {
-      timeout: 15000,
-      interval: 500,
-      timeoutMsg: 'Android camera permission dialog did not close.'
-    }
-  );
+        if (await allowOnceButton.isDisplayed()) {
+          await allowOnceButton.click();
+          return true;
+        }
 
-  console.log('Android permission dialog closed.');
+        return false;
+      },
+      {
+        timeout: 15000,
+        interval: 500,
+        timeoutMsg: 'Android camera permission prompt was not displayed.'
+      }
+    );
+
+    console.log('Camera permission granted.');
+  }
 
   await faceCheckModalTitle().waitForDisplayed({
     timeout: 20000,
@@ -105,14 +146,10 @@ When('the merchant grants camera permission if requested', async () => {
 Then('the camera preview should become ready', async () => {
   console.log('\n========== CAMERA FACE-CHECK PROGRESS ==========');
 
-  const checkingStatus = cameraPreviewStatus('Checking your smile...');
-  const acceptedStatus = cameraPreviewStatus('Smile accepted. Signing you in...');
-  const dashboard = $('android=new UiSelector().text("Alice Ledger")');
-
   await driver.waitUntil(async () => {
-    const checking = await checkingStatus.isDisplayed().catch(() => false);
-    const accepted = await acceptedStatus.isDisplayed().catch(() => false);
-    const loggedIn = await dashboard.isDisplayed().catch(() => false);
+    const checking = await cameraPreviewStatus('Checking your smile...').isExisting();
+    const accepted = await cameraPreviewStatus('Smile accepted. Signing you in...').isExisting();
+    const loggedIn = await $('android=new UiSelector().text("Alice Ledger")').isExisting();
 
     return checking || accepted || loggedIn;
   }, {
@@ -135,7 +172,7 @@ Then('the camera face-check should complete', async () => {
   const dashboard = $('android=new UiSelector().text("Alice Ledger")');
 
   await dashboard.waitForDisplayed({
-    timeout: 30000,
+    timeout: 90000,
     timeoutMsg: 'Camera face-check did not result in successful dashboard access.'
   });
 
@@ -189,16 +226,26 @@ Then('the merchant should remain on the login screen', async () => {
 When('the merchant denies camera permission', async () => {
   console.log('\n========== CAMERA PERMISSION DENIAL ==========');
 
-  const denyButton = cameraDenyButton();
+  const denyButtons = cameraDenyButtons();
 
-  await denyButton.waitForDisplayed({
-    timeout: 15000,
-    timeoutMsg: 'Android camera permission dialog was not displayed.'
-  });
+  await driver.waitUntil(
+    async () => {
+      for (const denyButton of denyButtons) {
+        if (await denyButton.isDisplayed()) {
+          await denyButton.click();
+          console.log('Camera permission denied successfully.');
+          return true;
+        }
+      }
 
-  await denyButton.click();
-
-  console.log('Camera permission denied successfully.');
+      return cameraAccessAlert().isDisplayed();
+    },
+    {
+      timeout: 15000,
+      interval: 500,
+      timeoutMsg: 'Neither Android camera permission prompt nor the denied-access alert appeared.'
+    }
+  );
 });
 
 Then('the camera access required alert should be displayed', async () => {

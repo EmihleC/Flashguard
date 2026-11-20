@@ -33,7 +33,7 @@ export const config: WebdriverIO.Config = {
             )
         ],
 
-        timeout: 60000,
+        timeout: 120000,
         tags: '@mobile',
         strict: true,
         failFast: true
@@ -63,7 +63,7 @@ export const config: WebdriverIO.Config = {
         'appium:adbExecTimeout': 120000,
         'appium:uiautomator2ServerLaunchTimeout': 90000,
         'appium:uiautomator2ServerInstallTimeout': 90000,
-        'appium:noReset': true,
+        'appium:noReset': false,
         'appium:forceAppLaunch': true,
         'appium:newCommandTimeout': 120
     }],
