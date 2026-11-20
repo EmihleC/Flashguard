@@ -25,3 +25,9 @@ node_modules
 
 mobile/node_modules/
 mobile/dist/
+
+# Expo local files
+mobile/.expo/
+
+# IDE settings
+tests/.idea/

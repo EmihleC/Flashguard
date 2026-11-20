@@ -4,17 +4,17 @@
   "private": true,
   "description": "Offline fintech apps, API, and DB for QE students.",
   "scripts": {
-    "stack:up": "npm run stack:up:containers && npm --prefix mobile run start",
-    "stack:up:containers": "docker compose up -d --build && node scripts/seed-after-up.mjs",
-    "stack:up:local": "docker compose up -d --build && node scripts/init-local-db.mjs",
-    "db:init-local": "node scripts/init-local-db.mjs",
-    "stack:down": "docker compose down -v",
-    "stack:logs": "docker compose logs -f",
-    "db:reset-seed": "docker compose --profile seed run --rm app-seed",
-    "api:health": "curl http://localhost:4000/health",
-    "test:mobile": "wdio run ./tests/mobile/wdio.conf.js",
-    "test:mobile:cucumber": "wdio run ./tests/mobile/wdio.cucumber.conf.ts"
-  },
+  "stack:up": "npm run stack:up:containers && npm --prefix mobile run start",
+  "stack:up:containers": "docker compose up -d --build && node scripts/seed-after-up.mjs",
+  "stack:up:local": "docker compose up -d --build && node scripts/init-local-db.mjs",
+  "db:init-local": "node scripts/init-local-db.mjs",
+  "stack:down": "docker compose down -v",
+  "stack:logs": "docker compose logs -f",
+  "db:reset-seed": "docker compose --profile seed run --rm app-seed",
+  "api:health": "curl http://localhost:4000/health",
+  "test:mobile": "wdio run ./tests/mobile/wdio.conf.js",
+  "test:mobile:cucumber": "wdio run ./tests/mobile/wdio.cucumber.conf.ts"
+},
   "devDependencies": {
     "@wdio/appium-service": "^10.1.1",
     "@wdio/cli": "^10.1.0",
