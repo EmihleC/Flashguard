@@ -24,6 +24,7 @@
     "@wdio/mocha-framework": "^10.1.0",
     "@wdio/spec-reporter": "^10.1.0",
     "appium": "^3.9.0",
+    "appium-inspector-plugin": "^2026.11.6",
     "appium-uiautomator2-driver": "^8.6.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
