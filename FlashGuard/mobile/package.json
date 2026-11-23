@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
+    "bser": "^2.1.2",
     "expo": "~54.0.33",
     "expo-camera": "~17.0.10",
     "expo-face-detector": "^13.0.2",
