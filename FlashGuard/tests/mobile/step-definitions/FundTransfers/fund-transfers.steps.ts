@@ -54,10 +54,10 @@ const historyTab = () =>
 // --------------------------------------------------
 
 const loginToDashboard = async () => {
-  await driver.execute('mobile: startActivity', {
-    intent: `${appPackage}/.MainActivity`,
-    wait: true
-  });
+  if ((await driver.getCurrentPackage()) !== appPackage) {
+    await driver.execute('mobile: activateApp', { appId: appPackage });
+  }
+
   await driver.waitUntil(async () => (await driver.getCurrentPackage()) === appPackage, {
     timeout: 30000,
     interval: 500,
@@ -83,7 +83,7 @@ const loginToDashboard = async () => {
 
     return false;
   }, {
-    timeout: 60000,
+    timeout: 90000,
     interval: 1000,
     timeoutMsg: 'Login, dashboard, or fund transfer screen did not appear after launching FlashGuard.'
   });

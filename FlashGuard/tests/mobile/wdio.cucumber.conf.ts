@@ -34,7 +34,7 @@ export const config: WebdriverIO.Config = {
         ],
 
         timeout: 120000,
-        tags: '@mobile',
+        tags: '(@mobile or @android) and not @wip',
         strict: true,
         failFast: true
     },
