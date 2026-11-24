@@ -11,6 +11,13 @@
     "stack:down": "docker compose down -v",
     "stack:logs": "docker compose logs -f",
     "db:reset-seed": "docker compose --profile seed run --rm app-seed",
-    "api:health": "curl http://localhost:4000/health"
+    "api:health": "curl http://localhost:4000/health",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6"
   }
 }
