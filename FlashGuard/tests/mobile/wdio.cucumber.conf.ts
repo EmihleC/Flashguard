@@ -27,20 +27,25 @@ export const config: WebdriverIO.Config = {
 
     cucumberOpts: {
         require: [
-            path.resolve(
-                __dirname,
-                'step-definitions/**/*.ts'
-            )
+            path.resolve(__dirname, 'step-definitions/Authentication/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/Balance_&_History/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/common/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/dashboard/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/FundTransfers/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/gestures/**/*.ts'),
+            path.resolve(__dirname, 'step-definitions/notifications/**/*.ts')
         ],
 
         timeout: 120000,
-        tags: '(@mobile or @android) and not @wip',
+        tags: '(@mobile or @android or @responsive) and not (@wip or @defect)',
         strict: true,
         failFast: true
     },
 
     specs: [
-        path.resolve(__dirname, 'features/**/*.feature')
+        path.resolve(__dirname, 'features/**/*.feature'),
+        path.resolve(__dirname, 'Mobile.Settings/**/*.feature'),
+        path.resolve(__dirname, 'Responsiveness.Gestrures/**/*.feature')
     ],
 
     maxInstances: 1,
@@ -69,7 +74,6 @@ export const config: WebdriverIO.Config = {
     }],
 
     logLevel: 'info',
-
 
     reporters: ['spec']
 };

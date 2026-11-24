@@ -1,4 +1,4 @@
-import { Given } from '@wdio/cucumber-framework';
+import { Given } from '@cucumber/cucumber';
 import { LoginScreen } from '../../../../src/pages/mobile/LoginScreen';
 import { DashboardScreen } from '../../../../src/pages/mobile/DashboardScreen';
 import { MobileActions } from '../../../../src/support/MobileActions';

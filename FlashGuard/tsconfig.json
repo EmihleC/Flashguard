@@ -8,8 +8,7 @@
     "skipLibCheck": true,
     "types": [
       "node",
-      "@wdio/globals/types",
-      "@wdio/cucumber-framework"
+      "@wdio/globals/types"
     ]
   },
   "include": [

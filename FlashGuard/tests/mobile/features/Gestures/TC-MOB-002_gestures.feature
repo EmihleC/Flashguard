@@ -13,6 +13,7 @@ Feature: Flash-Guard Mobile Gestures
   Scenario: T-MOB-GEST-002 Tap and long-press interactions
     When I open the mobile dashboard tab
     And I tap the mobile history tab
-    And I tap the mobile dashboard tab
+    Then the mobile history page should be displayed
+    When I tap the mobile dashboard tab
     And I long press the mobile balance card
     Then the mobile dashboard should remain stable

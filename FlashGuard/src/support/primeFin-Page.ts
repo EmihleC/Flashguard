@@ -1,4 +1,4 @@
-import { $, $$, browser } from '@wdio/globals';
+import { $, $$, browser, driver } from '@wdio/globals';
 import { normaliseStatus, parseZar } from '../support/helper';
 
 /**
@@ -58,7 +58,50 @@ class PrimeFinPage {
     await this.signInButton.click();
     await this.welcomeAlertTitle.waitForDisplayed({ timeout: 20000 });
     await this.alertOkButton.click();
-  }
+  };
+  
+async openTab(label: NavLabel) {
+
+    const tab = await $(
+        `android=new UiSelector().description("↺, ${label}")`
+    );
+
+    await tab.waitForDisplayed({ timeout: 10000 });
+    await tab.waitForEnabled({ timeout: 10000 });
+
+    console.log('NAVIGATION ELEMENT:', await tab.getAttribute('content-desc'));
+
+    // Tap the clickable navigation parent
+    await tab.click();
+
+    await browser.pause(2000);
+
+    // Check whether the screen changed
+    const source = await browser.getPageSource();
+
+    console.log('HISTORY SCREEN:', source.includes('Total Spending (May)'));
+    console.log('DASHBOARD SCREEN:', source.includes('Quick Actions'));
+
+    const marker: Record<NavLabel, string> = {
+        Dashboard: 'Quick Actions',
+        Services: 'Select Network',
+        Transact: 'From Account',
+        History: 'Total Spending (May)',
+        Account: 'Security',
+    };
+
+    const screenMarker = await $(
+        `android=new UiSelector().text("${marker[label]}")`
+    );
+
+    await screenMarker.waitForDisplayed({
+        timeout: 15000,
+        timeoutMsg: `Tapped "${label}" but its screen never appeared`
+    });
+
+    console.log(`Successfully navigated to ${label}`);
+}
+
 
   /** formatCurrency(null) renders "R 0.00" until loadSessionData() finishes, so wait for a non-zero value. */
   async waitForBalanceLoaded() {
@@ -73,9 +116,11 @@ class PrimeFinPage {
   }
 
   async transferScreenBalance(): Promise<number> {
-    await this.availableBalanceValue.waitForDisplayed({ timeout: 10000 });
-    return parseZar(await this.availableBalanceValue.getText());
-  }
+  await $(byText('From Account')).waitForDisplayed({ timeout: 10000 });
+  const amount = $('android=new UiSelector().textMatches("^-?R.{0,2}[0-9].*").instance(0)');
+  await amount.waitForDisplayed({ timeout: 10000 });
+  return parseZar(await amount.getText());
+}
 
   /** Scrolls the History ScrollView until a row with this title is on screen. */
   async scrollToRow(title: string) {

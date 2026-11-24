@@ -16,8 +16,12 @@ Given('I am logged in to PrimeFin SA', async () => {
   ctx.backend = await getBackendState();
 });
 
+Given('the dashboard balance has loaded', async () => {
+  await page.waitForBalanceLoaded();
+});
+
 When('I open the {string} tab', async (label: string) => {
-  await page.navItem(label as NavLabel).click();
+  await page.openTab(label as NavLabel);
 });
 
 // ---------- History (used by the scroll scenario and the filter scenario) ----------
