@@ -1,5 +1,7 @@
+
 import { World, IWorldOptions, setWorldConstructor } from '@cucumber/cucumber';
 import { Browser, BrowserContext, Page } from '@playwright/test';
+
 import { LoginPage } from '../../src/pages/LoginPage';
 import { DashboardPage } from '../../src/pages/dashboardPage';
 
@@ -14,9 +16,15 @@ export class UserWorld extends World {
     super(options);
   }
 
-  // Names of everything currently in the browser's session storage
-  sessionKeys() {
-    return this.page.evaluate(() => Object.keys(sessionStorage));
+  // Initialize Page Objects
+  initializePages() {
+    this.loginPage = new LoginPage(this.page);
+    this.dashboardPage = new DashboardPage(this.page);
+  }
+
+  // Get localStorage keys
+  async sessionKeys() {
+    return this.page.evaluate(() => Object.keys(localStorage));
   }
 }
 

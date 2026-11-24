@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '.env' });
+
 module.exports = {
   default: {
     requireModule: ['tsx/cjs'],
@@ -6,8 +8,6 @@ module.exports = {
       'tests/support/**/*.ts',
       'tests/ui/step definition/**/*.ts'
     ],
-
-    paths: ['tests/ui/features/**/*.feature'],
 
     format: [
       'progress',
