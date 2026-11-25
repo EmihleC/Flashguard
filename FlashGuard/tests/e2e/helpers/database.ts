@@ -20,7 +20,7 @@ export function executeSql(query: string): string {
       [
         '-S', `${process.env.DB_HOST || 'localhost'},${process.env.DB_PORT || '1433'}`,
         '-U', process.env.DB_USER || 'fg',
-        '-P', password,
+        '-P', password || 'YourStrong!Passw0rd',
         '-d', process.env.DB_NAME || 'FlashGuard',
         '-C',
         '-b',
