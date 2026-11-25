@@ -9,6 +9,8 @@ export interface Account { id: number; full_name?: string; email?: string }
 export interface HistoryTx {
   id: number;
   amount: number | string;
+  sender_account_id?: number | string;
+  recipient_account_id?: number | string;
   status?: string;
   title?: string;
   created_at?: string;
@@ -49,8 +51,8 @@ export async function loginAs(channel: 'web' | 'test-runner' = 'web'): Promise<S
 
 export const getAccounts = (s: Session) => call<Account[]>('GET', '/accounts', s.token);
 
-export async function getBalance(s: Session): Promise<number> {
-  const body = await call<{ balance: number | string }>('GET', `/accounts/${s.userId}/balance`, s.token);
+export async function getBalance(s: Session, accountId = s.userId): Promise<number> {
+  const body = await call<{ balance: number | string }>('GET', `/accounts/${accountId}/balance`, s.token);
   return Number(body.balance);
 }
 

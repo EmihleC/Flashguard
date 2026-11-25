@@ -3,7 +3,7 @@ declare const $: (selector: string) => any;
 declare const browser: any;
 declare const driver: any;
 
-/** Mobile "Transact" screen actions needed by the concurrent-transfer E2E. Text-based locators (no testIDs in App.js). */
+/** Mobile "Transact" screen actions used by the transfer E2E scenarios. */
 
 const esc = (v: string) => v.replace(/"/g, '\\"');
 const byText = (v: string) => `android=new UiSelector().text("${esc(v)}")`;
@@ -14,17 +14,37 @@ const reviewButtonSelector = 'new UiSelector().resourceId("transfer-submit")';
 export interface MobileTransferResult { ok: boolean; title: string; message: string }
 
 class TransferPage {
-  /** Scrolls the Transact ScrollView until the given UiSelector is on screen and returns that element. */
+  /** Swipes up to reveal later fields lower in the Transact form. */
   private async scrollTo(uiSelector: string) {
-    const el = await $(
-      `android=new UiScrollable(new UiSelector().scrollable(true)).setMaxSearchSwipes(10).scrollIntoView(${uiSelector})`,
-    );
-    await el.waitForDisplayed({ timeout: 10000 });
-    return el;
+    const target = $(`android=${uiSelector}`);
+    const scrollView = await $('android=new UiSelector().scrollable(true)');
+    await scrollView.waitForDisplayed({ timeout: 10000 });
+    const location = await scrollView.getLocation();
+    const size = await scrollView.getSize();
+    const left = location.x + Math.round(size.width * 0.05);
+    const top = location.y + Math.round(size.height * 0.12);
+    const width = Math.round(size.width * 0.9);
+    const height = Math.round(size.height * 0.75);
+
+    for (let swipe = 0; swipe < 10; swipe += 1) {
+      if (await target.isDisplayed()) return target;
+      await driver.execute('mobile: swipeGesture', {
+        left,
+        top,
+        width,
+        height,
+        direction: 'up',
+        percent: 0.75,
+      });
+    }
+
+    if (await target.isDisplayed()) return target;
+    throw new Error(`Could not scroll down to "${uiSelector}" within the Transact form`);
   }
 
   /** Use a stable test ID because the amount text changes as the controlled input updates. */
   async setAmount(amount: number) {
+    await this.scrollTo('new UiSelector().text("Transfer Details")');
     const input = await this.scrollTo(amountInputSelector);
     await input.click();
     await input.clearValue();
@@ -35,20 +55,50 @@ class TransferPage {
       timeout: 5000,
       timeoutMsg: `Transfer amount did not update to ${amount}`,
     });
-    try {
-      await driver.hideKeyboard();
-    } catch {
-      /* keyboard was not showing */
+    if (await driver.isKeyboardShown()) {
+      await driver.pressKeyCode(4);
+      await browser.waitUntil(async () => !(await driver.isKeyboardShown()), {
+        timeout: 5000,
+        timeoutMsg: 'Android keyboard remained open after pressing Back',
+      });
     }
   }
 
-  /** Brings the submit button into view without tapping it, so the tap can be timed precisely. */
+  async tapBeneficiary(name: string) {
+    await this.scrollTo(`new UiSelector().text("${esc(name)}")`);
+    const row = await $(
+      `//android.widget.TextView[@text="${esc(name)}"]/ancestor::android.view.ViewGroup[@clickable="true"][1]`,
+    );
+    await row.waitForDisplayed({ timeout: 10000 });
+    await row.click();
+  }
+
+  /** Brings the Review Transaction button into view. */
   async reviewButton() {
     return this.scrollTo(reviewButtonSelector);
   }
 
-  async tap(el: { elementId: string }) {
-    await driver.execute('mobile: clickGesture', { elementId: el.elementId });
+  async tapReviewTransaction() {
+    const button = await this.reviewButton();
+    await $(byText('Review Transaction')).waitForDisplayed({
+      timeout: 5000,
+      timeoutMsg: 'Review Transaction label was not visible',
+    });
+    await button.click();
+    await browser.waitUntil(
+      async () =>
+        (await $(byText('Submitting...')).isDisplayed()) ||
+        (await $(byText('Transfer submitted')).isDisplayed()) ||
+        (await $(byText('Transfer failed')).isDisplayed()),
+      {
+        timeout: 10000,
+        timeoutMsg: 'Tapping Review Transaction did not start a submission',
+      },
+    );
+  }
+
+  async tap(el: { click: () => Promise<void> }) {
+    await el.click();
   }
 
   /** App.js shows an Alert: "Transfer submitted" on success, "Transfer failed" + server message otherwise. */

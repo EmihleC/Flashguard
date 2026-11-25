@@ -1,3 +1,4 @@
+
 declare const require: (moduleName: string) => {
   execFileSync: (...args: any[]) => string;
 };
@@ -8,27 +9,35 @@ declare const process: {
 const { execFileSync } = require('child_process');
 
 export function executeSql(query: string): string {
-  const password = process.env.DB_PASSWORD;
+  const useWindowsAuth = process.env.DB_AUTH?.toLowerCase() === 'windows';
+  const args = [
+    '-S', `${process.env.DB_HOST || 'localhost'},${process.env.DB_PORT || '1433'}`,
+  ];
 
-  if (!password) {
-    throw new Error('DB_PASSWORD must be set to query SQL Server in E2E tests.');
+  if (useWindowsAuth) {
+    args.push('-E');
+  } else {
+    const password = process.env.DB_PASSWORD;
+    if (!password) {
+      throw new Error('Set DB_AUTH=windows or provide DB_PASSWORD to query SQL Server in E2E tests.');
+    }
+    args.push('-U', process.env.DB_USER || 'fg', '-P', password);
   }
+
+  args.push(
+    '-d', process.env.DB_NAME || 'FlashGuard',
+    '-C',
+    '-b',
+    '-h', '-1',
+    '-W',
+    '-s', '|',
+    '-Q', query
+  );
 
   try {
     return execFileSync(
       'sqlcmd',
-      [
-        '-S', `${process.env.DB_HOST || 'localhost'},${process.env.DB_PORT || '1433'}`,
-        '-U', process.env.DB_USER || 'fg',
-        '-P', password || 'YourStrong!Passw0rd',
-        '-d', process.env.DB_NAME || 'FlashGuard',
-        '-C',
-        '-b',
-        '-h', '-1',
-        '-W',
-        '-s', '|',
-        '-Q', query
-      ],
+      args,
       {
         encoding: 'utf8',
         env: process.env,
@@ -55,7 +64,7 @@ export function getLatestLoginAuditId(accountId: number): number {
   const id = Number(result);
 
   if (!Number.isInteger(id)) {
-    throw new Error(`Unexpected SQL result: ${result}`);
+   throw new Error(`Unexpected SQL result: ${result}`);
   }
 
   return id;

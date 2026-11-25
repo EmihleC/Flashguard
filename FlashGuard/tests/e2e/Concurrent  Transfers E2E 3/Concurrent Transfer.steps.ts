@@ -1,6 +1,4 @@
-// Concurrent transfers: mobile (Appium UI) and web (separate API session) at the same moment.
-// Same page objects, API client and helpers as concurrent_transfers.steps.ts.
-// The feature has no Background, so the mobile login happens in the first Given step.
+// Android transfer scenarios use the mobile UI and a separate API session for verification.
 import { Before, Given, When, Then } from '@wdio/cucumber-framework';
 import { expect } from '@wdio/globals';
 import page from './primefin.page';
@@ -13,7 +11,10 @@ import {
 
 interface ConcurrencyState {
   web: Session;
+  senderName?: string;
   recipientId?: number;
+  recipientName?: string;
+  recipientBalance?: number;
   originalBalance?: number;
   originalIds?: Set<number>;
   mobileAmount?: number;
@@ -25,12 +26,16 @@ interface ConcurrencyState {
 
 let state: ConcurrencyState | undefined;
 const st = (): ConcurrencyState => {
-  if (!state) throw new Error('State missing: the "account balance is R..." step must run first');
+  if (!state) throw new Error('State missing: an account setup step must run first');
   return state;
 };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 Before({ tags: '@concurrency' }, async () => {
+  state = undefined;
+});
+
+Before({ tags: '@mobile-transfer' }, async () => {
   state = undefined;
 });
 
@@ -47,28 +52,42 @@ async function waitForNewTransactions(s: ConcurrencyState, atLeast: number): Pro
   return fresh;
 }
 
-// ---------- setup ----------
-Given('the account balance is R{float}', async (expectedBalance: number) => {
-  // mobile channel: log in to the app
+async function initializeState(): Promise<ConcurrencyState> {
   await page.login();
   await page.waitForBalanceLoaded();
 
-  // web channel: a second, separate login session
   const s: ConcurrencyState = { web: await loginAs('web') };
-  state = s;
-
   const accounts = await getAccounts(s.web);
-  const recipient = accounts.find((a) => a.id !== s.web.userId); // same pick the app makes by default
+  const sender = accounts.find((a) => a.id === s.web.userId);
+  const recipient = accounts.find((a) => a.id !== s.web.userId);
+  if (!sender) throw new Error(`Could not find the signed-in account with ID ${s.web.userId}`);
   if (!recipient) throw new Error('The database needs a second account to act as the transfer recipient');
+  s.senderName = sender.full_name;
   s.recipientId = recipient.id;
-
   s.originalBalance = round2(await getBalance(s.web));
   s.originalIds = new Set((await getHistory(s.web)).map((t) => t.id));
+  state = s;
+  return s;
+}
 
-  // the test cannot seed money, so the user must already hold exactly this balance
+// ---------- setup ----------
+Given('the account balance is R{float}', async (expectedBalance: number) => {
+  const s = await initializeState();
   if (s.originalBalance !== round2(expectedBalance)) {
     throw new Error(
       `Precondition failed: expected the account balance to be R${expectedBalance}, but the database has R${s.originalBalance}. Reseed the demo user first.`,
+    );
+  }
+});
+
+Given('Alice has at least R{float} available', async (minimumBalance: number) => {
+  const s = await initializeState();
+  if (s.senderName !== 'Alice Ledger') {
+    throw new Error(`Expected Alice Ledger to be signed in, but the API session belongs to "${s.senderName}"`);
+  }
+  if ((s.originalBalance as number) < round2(minimumBalance)) {
+    throw new Error(
+      `Precondition failed: Alice needs at least R${minimumBalance}, but the database has R${s.originalBalance}.`,
     );
   }
 });
@@ -102,6 +121,37 @@ When(
     console.log(
       `[Concurrency] web call started +${web.startedAt - fireAt}ms after the tap command, took ${web.finishedAt - web.startedAt}ms`,
     );
+  },
+);
+
+When(
+  'Alice transfers R{float} to {string} and taps Review Transaction',
+  async (amount: number, recipientName: string) => {
+    const s = st();
+    const recipient = (await getAccounts(s.web)).find((account) => account.full_name === recipientName);
+    if (!recipient || recipient.id === s.web.userId) {
+      throw new Error(`Could not find a transfer recipient named "${recipientName}"`);
+    }
+    if ((s.originalBalance as number) < round2(amount)) {
+      throw new Error(`Alice's balance is too low to transfer R${amount}`);
+    }
+
+    s.recipientId = recipient.id;
+    s.recipientName = recipientName;
+    s.recipientBalance = round2(await getBalance(s.web, recipient.id));
+    s.mobileAmount = amount;
+
+    await page.openTab('Transact');
+    const mobileBalance = round2(await page.transferScreenBalance());
+    if (mobileBalance !== s.originalBalance) {
+      throw new Error(
+        `The mobile app balance is R${mobileBalance}, but Alice's API balance is R${s.originalBalance}`,
+      );
+    }
+    await transferPage.tapBeneficiary(recipientName);
+    await transferPage.setAmount(amount);
+    await transferPage.tap(await transferPage.reviewButton());
+    s.mobileResult = await transferPage.waitForTransferResult();
   },
 );
 
@@ -164,3 +214,66 @@ Then('no duplicate transactions should exist', async () => {
   expect(new Set(fresh.map((t) => t.id)).size).toBe(fresh.length);
   expect(fresh.length).toBe(2);
 });
+
+Then('the mobile transfer should be submitted successfully', async () => {
+  const result = st().mobileResult;
+  if (!result?.ok) {
+    throw new Error(`Mobile transfer failed: ${result?.message || '(no success alert appeared)'}`);
+  }
+});
+
+Then('the transfer should be completed from Alice to {string}', async (recipientName: string) => {
+  const s = st();
+  if (s.recipientName !== recipientName) {
+    throw new Error(`Expected recipient "${recipientName}", but selected "${s.recipientName}"`);
+  }
+
+  const fresh = await waitForNewTransactions(s, 1);
+  if (fresh.length !== 1) {
+    throw new Error(`Expected one new transfer, but found ${fresh.length}`);
+  }
+
+  let transaction = await getTransaction(s.web, fresh[0].id);
+  expect(Number(transaction.sender_account_id)).toBe(s.web.userId);
+  expect(Number(transaction.recipient_account_id)).toBe(s.recipientId);
+  expect(round2(Math.abs(Number(transaction.amount)))).toBe(round2(s.mobileAmount as number));
+
+  const status = normaliseStatus(transaction.status);
+  if (status === 'pending') {
+    await authorize(s.web, transaction.id);
+    transaction = await getTransaction(s.web, transaction.id);
+  } else if (status !== 'completed') {
+    throw new Error(`Expected a pending or completed transfer, received status "${transaction.status}"`);
+  }
+  expect(normaliseStatus(transaction.status)).toBe('completed');
+  s.newTxs = [transaction];
+});
+
+Then(
+  "Alice's balance should decrease by R{float} and {string} should increase by R{float}",
+  async (debit: number, recipientName: string, credit: number) => {
+    const s = st();
+    if (s.recipientName !== recipientName) {
+      throw new Error(`Expected recipient "${recipientName}", but selected "${s.recipientName}"`);
+    }
+    expect(round2(debit)).toBe(round2(s.mobileAmount as number));
+    expect(round2(credit)).toBe(round2(s.mobileAmount as number));
+
+    const expectedAliceBalance = round2((s.originalBalance as number) - debit);
+    const expectedRecipientBalance = round2((s.recipientBalance as number) + credit);
+    const deadline = Date.now() + 10000;
+    let aliceBalance = round2(await getBalance(s.web));
+    let recipientBalance = round2(await getBalance(s.web, s.recipientId as number));
+    while (
+      (aliceBalance !== expectedAliceBalance || recipientBalance !== expectedRecipientBalance) &&
+      Date.now() < deadline
+    ) {
+      await sleep(500);
+      aliceBalance = round2(await getBalance(s.web));
+      recipientBalance = round2(await getBalance(s.web, s.recipientId as number));
+    }
+
+    expect(aliceBalance).toBe(expectedAliceBalance);
+    expect(recipientBalance).toBe(expectedRecipientBalance);
+  },
+);

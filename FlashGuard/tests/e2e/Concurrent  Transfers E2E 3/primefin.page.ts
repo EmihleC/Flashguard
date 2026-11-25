@@ -56,13 +56,19 @@ class PrimeFinPage {
   }
 
   // ---------- actions ----------
-  /** Real tap gesture on the tab's container, then waits for that tab's screen so a missed tap fails here. */
+  /** Tap the visible label so a transient overlay over the tab's center cannot intercept the tap. */
   async openTab(label: NavLabel) {
-    const tab = await $(
-      `(//android.widget.TextView[@text="${label}"])[last()]/ancestor::android.view.ViewGroup[@clickable="true"][1]`,
-    );
-    await tab.waitForDisplayed({ timeout: 10000 });
-    await driver.execute('mobile: clickGesture', { elementId: tab.elementId });
+    if (label === 'Transact') {
+      const sendMoney = await $(
+        '//android.widget.TextView[@text="Send Money"]/ancestor::android.view.ViewGroup[@clickable="true"][1]',
+      );
+      await sendMoney.waitForDisplayed({ timeout: 10000 });
+      await driver.execute('mobile: clickGesture', { elementId: sendMoney.elementId });
+    } else {
+      const tab = await this.navItem(label);
+      await tab.waitForDisplayed({ timeout: 10000 });
+      await tab.click();
+    }
 
     const marker: Record<NavLabel, string> = {
       Dashboard: 'Quick Actions',
