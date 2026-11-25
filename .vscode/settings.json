@@ -1,0 +1,10 @@
+
+{
+  "cucumberautocomplete.steps": [
+    "tests/mobile/step-definitions/**/*.ts",
+    "FlashGuard/tests/e2e/Concurrent  Transfers/TC-E2E-003Scenario.spec.ts"
+  ],
+  "cucumberautocomplete.syncfeatures": "tests/mobile/features/**/*.feature",
+  "cucumberautocomplete.strictGherkinCompletion": true,
+  "cucumberautocomplete.smartSnippets": true
+}

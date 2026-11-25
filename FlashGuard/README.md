@@ -9,9 +9,10 @@ This repository contains the student system under test:
 
 ## 1) Prerequisites
 
-- Node.js 18+
+- Node.js 18+ for the Docker API; Node.js 22+ for the Windows Authentication API
 - Docker Desktop (Compose enabled)
 - SQL Server running on the host machine (default: localhost:1433)
+- ODBC Driver 18 for SQL Server for Windows Authentication mode
 
 ## 2) First-Time Setup
 
@@ -21,15 +22,50 @@ This repository contains the student system under test:
 cp .env.example .env
 ```
 
-2. Ensure SQL credentials in `.env` are valid for your local SQL Server.
+2. Choose the database authentication mode before starting the API.
 
-3. Start everything (containers + DB seed + Expo interactive mobile runner).
+### Windows Authentication (no SQL password)
+
+Use this mode when your Windows account has access to the local SQL Server. The API must run directly on Windows; the Docker API container cannot use your Windows login.
+
+1. Keep `DB_HOST=localhost` in `.env`. Remove any `DB_USER` or `DB_PASSWORD` entries; the Windows-auth start command selects this mode.
+2. Install API dependencies with `npm --prefix api install`.
+3. If the FlashGuard database has not been initialized, run `npm run db:init-local`. This resets and reseeds its data.
+4. If the Docker API container is running, stop it with `docker compose stop api`.
+5. Start the API on Windows:
 
 ```bash
-npm run stack:up
+npm run api:start:windows-auth
 ```
 
-The Expo terminal will prompt you to choose how to open the mobile app (Android emulator, web, etc.).
+The API uses the current Windows account via the installed SQL Server ODBC driver. To start the local stack in one command, run `npm run stack:up:local`. It stops the Docker API, starts the web/mobile containers, resets and reseeds the database, and starts the API on Windows. The seed resets database records. Leave the terminal running.
+
+To run the Playwright browser cases from a second PowerShell terminal in `FlashGuard`, use Windows authentication for SQL queries and run the tagged spec:
+
+```powershell
+$env:DB_AUTH = "windows"
+npm run test:e2e -- tests/e2e/step_definition/TC-E2E-001.scenario1.spec.ts
+```
+
+Run all Playwright cases with `npm run test:e2e`. The stack must be running; these cases use the web app on port 3000 and API on port 4000.
+
+To run the concurrent-transfer scenario, use a second terminal and run `npm --prefix "tests/e2e/Concurrent  Transfers" run test:concurrency` from `FlashGuard`. That scenario requires Alice's balance to be exactly R100; the default seed sets it to R10000, so adjust the test account balance after seeding.
+
+The Android development build also needs Metro. In another terminal, run `npm --prefix mobile run start` from `FlashGuard`, then press `a` in the Expo terminal to open the app on the emulator. If the emulator cannot reach Metro, run `adb reverse tcp:8081 tcp:8081`. Keep Metro running while the test executes.
+
+To run the mobile Alice-to-Bob R50 case, keep the API, Metro, emulator, and Appium running, then set the Expo Go capabilities and run:
+
+```powershell
+$env:APP_PACKAGE = "host.exp.exponent"
+$env:APP_ACTIVITY = ".experience.ExperienceActivity"
+npm --prefix "tests/e2e/Concurrent  Transfers" run test:mobile-transfer
+```
+
+The test taps **Review Transaction**, verifies the transfer, authorizes it through the test API, then checks Alice's and Bob Wallet's balances. Alice must have at least R50 available.
+
+### Docker SQL Authentication
+
+The Docker API path requires SQL Server Authentication credentials in `.env` (`DB_USER` and `DB_PASSWORD`). Start it with `npm run stack:up:containers`.
 
 ## 3) Service Endpoints
 
@@ -52,13 +88,13 @@ Container notes:
 
 ## 4) Common Commands
 
-- Start full stack and Expo prompt:
+- Start full Docker stack and Expo prompt (requires SQL Server Authentication credentials):
 
 ```bash
 npm run stack:up
 ```
 
-- Start containers and seed only (no Expo prompt):
+- Start Docker containers and seed only (requires SQL Server Authentication credentials):
 
 ```bash
 npm run stack:up:containers

@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  testIgnore: '**/TC-E2E-003Scenario.spec.ts',
   fullyParallel: false,
   forbidOnly: Boolean(
     (globalThis as { process?: { env?: { CI?: string } } }).process?.env?.CI

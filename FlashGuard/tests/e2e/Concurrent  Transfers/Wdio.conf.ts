@@ -34,7 +34,7 @@ export const config: WebdriverIO.Config = {
   framework: 'cucumber',
   reporters: ['spec'],
   cucumberOpts: {
-    require: ['./Transfer.steps.ts'],
+    require: ['./Concurrent Transfer.steps.ts'],
     timeout: 120000,
     tagExpression: process.env.TAGS ?? 'not @wip and not @e2e', // @wip = feature not built in the app yet
   },
