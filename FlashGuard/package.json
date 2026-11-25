@@ -18,6 +18,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
+    "@types/mssql": "^12.3.0",
     "@types/node": "^26.6.6"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "mssql": "^12.8.1"
   }
 }

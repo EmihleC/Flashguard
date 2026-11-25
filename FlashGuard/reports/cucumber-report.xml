@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<testsuite name="Cucumber" time="34.747" tests="7" skipped="0" failures="2" errors="0" timestamp="2026-11-24T12:26:42.192Z">
+  <testcase classname="Login" name="&lt;id> Login with valid credentials as &lt;user> - #1.1: T-UI-AUTH-001 Login with valid credentials as alice" time="3.657">
+    <system-out><![CDATA[Given I am on the login page................................................passed
+When I sign in as "alice"...................................................passed
+Then I should see the dashboard.............................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="&lt;id> Login with valid credentials as &lt;user> - #1.2: T-UI-AUTH-002 Login with valid credentials as bob" time="3.315">
+    <system-out><![CDATA[Given I am on the login page................................................passed
+When I sign in as "bob".....................................................passed
+Then I should see the dashboard.............................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="T-UI-AUTH-003 Login with invalid password" time="3.235">
+    <system-out><![CDATA[Given I am on the login page................................................passed
+When I sign in with invalid credentials as "bob"............................passed
+Then I should remain on the login page......................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="T-UI-AUTH-004 Account locks after 5 failed attempts" time="8.603">
+    <failure type="ExpectError" message="[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed&#xA;&#xA;Locator: getByTestId('account-locked')&#xA;Expected: visible&#xA;Timeout: 5000ms&#xA;Error: element(s) not found&#xA;&#xA;Call log:&#xA;[2m  - Expect &quot;toBeVisible&quot; getByTestId('account-locked') with timeout 5000ms[22m&#xA;[2m  - waiting for getByTestId('account-locked')[22m&#xA;"><![CDATA[Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByTestId('account-locked')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" getByTestId('account-locked') with timeout 5000ms[22m
+[2m  - waiting for getByTestId('account-locked')[22m
+
+    at captureRawStack (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright-core\lib\coreBundle.js:8588:17)
+    at callMatcherAsStep (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toBeVisible (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright\lib\matchers\expect.js:13302:23)
+    at UserWorld.<anonymous> (C:\Users\Abdoel\Documents\Flash-capstone-project\FlashGuard\tests\ui\step definition\TC-UI-003-login.steps.ts:115:41)]]></failure>
+    <system-out><![CDATA[Given I am on the login page................................................passed
+When I fail to log in as "charlie" 5 times..................................passed
+Then I should see the account locked message................................failed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="T-UI-AUTH-005 Logout and login again" time="3.93">
+    <system-out><![CDATA[Given I am on the login page................................................passed
+Given I am logged in as "alice".............................................passed
+When I sign out and sign back in as "alice".................................passed
+Then I should see the dashboard.............................................passed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="T-UI-AUTH-006 Session expires after 30 minutes of inactivity" time="8.353">
+    <failure type="ExpectError" message="[2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed&#xA;&#xA;Locator: getByTestId('session-expired')&#xA;Expected: visible&#xA;Timeout: 5000ms&#xA;Error: element(s) not found&#xA;&#xA;Call log:&#xA;[2m  - Expect &quot;toBeVisible&quot; getByTestId('session-expired') with timeout 5000ms[22m&#xA;[2m  - waiting for getByTestId('session-expired')[22m&#xA;"><![CDATA[Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+Locator: getByTestId('session-expired')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+[2m  - Expect "toBeVisible" getByTestId('session-expired') with timeout 5000ms[22m
+[2m  - waiting for getByTestId('session-expired')[22m
+
+    at captureRawStack (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright-core\lib\coreBundle.js:8588:17)
+    at callMatcherAsStep (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright\lib\matchers\expect.js:13310:57)
+    at Object.toBeVisible (C:\Users\Abdoel\node_modules\@playwright\test\node_modules\playwright\lib\matchers\expect.js:13302:23)
+    at UserWorld.<anonymous> (C:\Users\Abdoel\Documents\Flash-capstone-project\FlashGuard\tests\ui\step definition\TC-UI-003-login.steps.ts:122:42)]]></failure>
+    <system-out><![CDATA[Given I am on the login page................................................passed
+Given I am logged in as "bob"...............................................passed
+When I am inactive for 30 minutes...........................................passed
+Then I should see the session expired message...............................failed]]></system-out>
+  </testcase>
+  <testcase classname="Login" name="T-UI-AUTH-007 Login works in the latest Chrome" time="3.262">
+    <system-out><![CDATA[Given I am on the login page................................................passed
+Given the test is running in Google Chrome..................................passed
+When I sign in as "alice"...................................................passed
+Then I should see the dashboard.............................................passed]]></system-out>
+  </testcase>
+</testsuite>
