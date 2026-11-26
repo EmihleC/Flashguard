@@ -100,24 +100,26 @@ class PrimeFinPage {
     await this.signInButton.click();
     await this.welcomeAlertTitle.waitForDisplayed({ timeout: 20000 });
     await this.alertOkButton.click();
-  }
-
-  /** formatCurrency(null) renders "R 0.00" until loadSessionData() finishes, so wait for a non-zero value. */
-  async waitForBalanceLoaded() {
-    await browser.waitUntil(
-      async () => parseZar(await this.heroCardValue('Total Net Worth').getText()) > 0,
-      { timeout: 20000, timeoutMsg: 'Dashboard balance never loaded (still R 0.00)' },
-    );
+    await this.dashboardMarker.waitForDisplayed({
+      timeout: 30000,
+      timeoutMsg: 'Dashboard did not appear after sign in',
+    });
   }
 
   async dashboardBalance(): Promise<number> {
     return parseZar(await this.heroCardValue('Total Net Worth').getText());
   }
 
-  async transferScreenBalance(): Promise<number> {
+  async transferScreenBalance(expectedBalance?: number): Promise<number> {
     await $(byText('From Account')).waitForDisplayed({ timeout: 10000 });
     const amount = $('android=new UiSelector().textMatches("^-?R.{0,2}[0-9].*").instance(0)');
     await amount.waitForDisplayed({ timeout: 10000 });
+    if (expectedBalance !== undefined) {
+      await browser.waitUntil(async () => parseZar(await amount.getText()) === expectedBalance, {
+        timeout: 20000,
+        timeoutMsg: `Mobile app balance did not update to R${expectedBalance}`,
+      });
+    }
     return parseZar(await amount.getText());
   }
 

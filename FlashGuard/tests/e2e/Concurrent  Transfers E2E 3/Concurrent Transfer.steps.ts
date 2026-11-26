@@ -53,8 +53,8 @@ async function waitForNewTransactions(s: ConcurrencyState, atLeast: number): Pro
 }
 
 async function initializeState(): Promise<ConcurrencyState> {
+  await transferPage.restartApp();
   await page.login();
-  await page.waitForBalanceLoaded();
 
   const s: ConcurrencyState = { web: await loginAs('web') };
   const accounts = await getAccounts(s.web);
@@ -142,7 +142,7 @@ When(
     s.mobileAmount = amount;
 
     await page.openTab('Transact');
-    const mobileBalance = round2(await page.transferScreenBalance());
+    const mobileBalance = round2(await page.transferScreenBalance(s.originalBalance));
     if (mobileBalance !== s.originalBalance) {
       throw new Error(
         `The mobile app balance is R${mobileBalance}, but Alice's API balance is R${s.originalBalance}`,

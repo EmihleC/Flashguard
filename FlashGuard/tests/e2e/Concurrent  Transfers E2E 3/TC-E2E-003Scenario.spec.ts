@@ -47,8 +47,8 @@ async function waitForNewTransactions(s: ConcurrencyState, atLeast: number): Pro
 
 async function initializeState(): Promise<ConcurrencyState> {
   state = undefined;
+  await transferPage.restartApp();
   await page.login();
-  await page.waitForBalanceLoaded();
 
   const s: ConcurrencyState = { web: await loginAs('web') };
   const accounts = await getAccounts(s.web);

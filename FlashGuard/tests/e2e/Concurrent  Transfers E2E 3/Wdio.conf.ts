@@ -5,7 +5,7 @@ export const config: WebdriverIO.Config = {
   port: 4723,
   path: '/',
 
-  specs: ['./Concurrent Transfers.feature'],
+  specs: ['./E2EScenario3-Concurrent Transfers.feature'],
   maxInstances: 1,
 
   capabilities: [
